@@ -30,8 +30,15 @@ else
     echo "[`date`] Using POST body: $QUERY" >&2
 fi
 
-TO=$(echo "$QUERY" | sed 's/.*to=\([^&]*\).*/\1/')
-MSG=$(echo "$QUERY" | sed 's/.*msg=\([^&]*\).*/\1/')
+urldecode() {
+  printf '%b' "$(echo "$1" | sed 's/+/ /g;s/%/\\x/g')"
+}
+
+RAW_TO=$(echo "$QUERY" | sed -n 's/.*[?&]to=\([^&]*\).*/\1/p')
+RAW_MSG=$(echo "$QUERY" | sed -n 's/.*[?&]msg=\([^&]*\).*/\1/p')
+
+TO=$(urldecode "$RAW_TO")
+MSG=$(urldecode "$RAW_MSG")
 
 echo "[`date`] Parsed TO: $TO" >&2
 echo "[`date`] Parsed MSG: $MSG" >&2
@@ -65,7 +72,7 @@ echo "=== Run Text Server ==="
 if [ -n "\$IP" ]; then
   echo "Phone LAN IP: \$IP"
   echo "Test URL:"
-  echo "http://\$IP:8080/cgi-bin/send.sh?to=+614xxxxxxxx&msg=hello"
+  echo "http://\$IP:8080/cgi-bin/send.sh?to=+614xxxxxxxx&msg=hello%20world"
 else
   echo "Could not auto-detect LAN IP. Check Wi-Fi settings."
 fi
