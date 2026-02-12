@@ -34,8 +34,8 @@ urldecode() {
   printf '%b' "$(echo "$1" | sed 's/+/ /g;s/%/\\x/g')"
 }
 
-RAW_TO=$(echo "$QUERY" | sed -n 's/.*[?&]to=\([^&]*\).*/\1/p')
-RAW_MSG=$(echo "$QUERY" | sed -n 's/.*[?&]msg=\([^&]*\).*/\1/p')
+RAW_TO=$(printf '%s\n' "$QUERY" | tr '&' '\n' | sed -n 's/^to=//p')
+RAW_MSG=$(printf '%s\n' "$QUERY" | tr '&' '\n' | sed -n 's/^msg=//p')
 
 TO=$(urldecode "$RAW_TO")
 MSG=$(urldecode "$RAW_MSG")
