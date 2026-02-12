@@ -30,21 +30,32 @@ else
 fi
 
 urldecode() {
-  local data="${1//+/ }"
-  local decoded=""
-  local i=0
-  while [ $i -lt ${#data} ]; do
-    char="${data:$i:1}"
-    if [ "$char" = "%" ]; then
-      hex="${data:$((i+1)):2}"
-      decoded="$decoded$(printf "\\x$hex")"
-      i=$((i+3))
-    else
-      decoded="$decoded$char"
-      i=$((i+1))
-    fi
-  done
-  printf '%s' "$decoded"
+  printf '%s' "$1" | awk '
+    BEGIN {
+      for (i=0; i<256; i++) {
+        hex[sprintf("%02X", i)] = sprintf("%c", i)
+        hex[sprintf("%02x", i)] = sprintf("%c", i)
+      }
+    }
+    {
+      gsub(/\+/, " ")
+      decoded = ""
+      len = length($0)
+      i = 1
+      while (i <= len) {
+        c = substr($0, i, 1)
+        if (c == "%") {
+          code = substr($0, i+1, 2)
+          decoded = decoded hex[code]
+          i += 3
+        } else {
+          decoded = decoded c
+          i += 1
+        }
+      }
+      printf "%s", decoded
+    }
+  '
 }
 
 RAW_TO=$(printf '%s\n' "$QUERY" | tr '&' '\n' | sed -n 's/^to=//p')
@@ -105,4 +116,4 @@ echo "Setup complete."
 echo "Run the server with:"
 echo "  ~/rts.sh"
 echo
-echo "First SMS send may trigger permission
+echo "First SMS send may trigger permission prompt."
