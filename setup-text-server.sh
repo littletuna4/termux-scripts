@@ -3,8 +3,7 @@
 
 set -e
 
-#echo "[1/4] Installing packages"
-#pkg update -y
+echo "[1/4] Installing packages"
 #pkg install -y busybox termux-api
 
 BASE="$HOME/sms-gateway"
@@ -31,7 +30,8 @@ else
 fi
 
 urldecode() {
-  printf '%b' "$(echo "$1" | sed 's/+/ /g;s/%/\\x/g')"
+  local data=${1//+/ }
+  printf '%s' "$data" | sed -E 's/%([0-9A-Fa-f]{2})/\\x\1/g' | xargs -0 printf '%b'
 }
 
 RAW_TO=$(printf '%s\n' "$QUERY" | tr '&' '\n' | sed -n 's/^to=//p')
@@ -60,19 +60,19 @@ chmod +x "$WWW/send.sh"
 
 echo "[4/4] Writing rts.sh"
 
-cat > "$HOME/rts.sh" <<EOF
+cat > "$HOME/rts.sh" <<'EOF'
 #!/data/data/com.termux/files/usr/bin/sh
 # rts.sh — Run Text Server
 
-BASE="\$HOME/sms-gateway"
-IP=\$(getprop dhcp.wlan0.ipaddress)
+BASE="$HOME/sms-gateway"
+IP=$(getprop dhcp.wlan0.ipaddress)
 
 echo "=== Run Text Server ==="
 
-if [ -n "\$IP" ]; then
-  echo "Phone LAN IP: \$IP"
+if [ -n "$IP" ]; then
+  echo "Phone LAN IP: $IP"
   echo "Test URL:"
-  echo "http://\$IP:8080/cgi-bin/send.sh?to=+614xxxxxxxx&msg=hello%20world"
+  echo "http://$IP:8080/cgi-bin/send.sh?to=0457271181&msg=hello%20world"
 else
   echo "Could not auto-detect LAN IP. Check Wi-Fi settings."
 fi
@@ -82,7 +82,7 @@ echo "Starting HTTP server on port 8080..."
 echo "Press Ctrl+C to stop."
 echo
 
-busybox httpd -f -p 8080 -h "\$BASE/www"
+busybox httpd -f -p 8080 -h "$BASE/www"
 EOF
 
 chmod +x "$HOME/rts.sh"
