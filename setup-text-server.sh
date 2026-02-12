@@ -4,7 +4,7 @@
 set -e
 
 echo "[1/4] Installing packages"
-#pkg install -y busybox termux-api
+pkg install -y busybox termux-api
 
 BASE="$HOME/sms-gateway"
 WWW="$BASE/www/cgi-bin"
@@ -30,8 +30,21 @@ else
 fi
 
 urldecode() {
-  local data=${1//+/ }
-  printf '%s' "$data" | sed -E 's/%([0-9A-Fa-f]{2})/\\x\1/g' | xargs -0 printf '%b'
+  local data="${1//+/ }"
+  local decoded=""
+  local i=0
+  while [ $i -lt ${#data} ]; do
+    char="${data:$i:1}"
+    if [ "$char" = "%" ]; then
+      hex="${data:$((i+1)):2}"
+      decoded="$decoded$(printf "\\x$hex")"
+      i=$((i+3))
+    else
+      decoded="$decoded$char"
+      i=$((i+1))
+    fi
+  done
+  printf '%s' "$decoded"
 }
 
 RAW_TO=$(printf '%s\n' "$QUERY" | tr '&' '\n' | sed -n 's/^to=//p')
@@ -92,4 +105,4 @@ echo "Setup complete."
 echo "Run the server with:"
 echo "  ~/rts.sh"
 echo
-echo "First SMS send may trigger permission prompt."
+echo "First SMS send may trigger permission
