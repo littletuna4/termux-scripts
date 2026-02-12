@@ -3,9 +3,9 @@
 
 set -e
 
-echo "[1/4] Installing packages"
-pkg update -y
-pkg install -y busybox termux-api
+#echo "[1/4] Installing packages"
+#pkg update -y
+#pkg install -y busybox termux-api
 
 BASE="$HOME/sms-gateway"
 WWW="$BASE/www/cgi-bin"
