@@ -16,9 +16,6 @@ echo "[3/4] Writing CGI SMS handler"
 
 cat > "$WWW/send.sh" <<'EOF'
 #!/data/data/com.termux/files/usr/bin/sh
-echo "Content-Type: text/plain"
-echo
-
 echo "[`date`] Request received" >&2
 
 if [ -n "$QUERY_STRING" ]; then
@@ -69,7 +66,8 @@ echo "[`date`] Parsed MSG: $MSG" >&2
 
 if [ -z "$TO" ] || [ -z "$MSG" ]; then
   echo "[`date`] ERR: missing to or msg" >&2
-  echo "ERR: missing to or msg"
+  BODY="ERR: missing to or msg"
+  printf "Content-Type: text/plain\r\nContent-Length: %d\r\n\r\n%s" "${#BODY}" "$BODY"
   exit 1
 fi
 
@@ -77,7 +75,8 @@ echo "[`date`] Sending SMS..." >&2
 termux-sms-send -n "$TO" "$MSG"
 echo "[`date`] SMS sent to $TO" >&2
 
-echo "OK"
+BODY="OK"
+printf "Content-Type: text/plain\r\nContent-Length: %d\r\n\r\n%s" "${#BODY}" "$BODY"
 EOF
 
 chmod +x "$WWW/send.sh"
